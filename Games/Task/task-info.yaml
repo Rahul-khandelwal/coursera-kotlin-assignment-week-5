@@ -1,0 +1,1613 @@
+type: edu
+files:
+- name: src/board/Board.kt
+  visible: true
+  text: |-
+    package board
+
+    data class Cell(val i: Int, val j: Int) {
+        override fun toString()= "($i, $j)"
+    }
+
+    enum class Direction {
+        UP, DOWN, RIGHT, LEFT;
+
+        fun reversed() = when (this) {
+            UP -> DOWN
+            DOWN -> UP
+            RIGHT -> LEFT
+            LEFT -> RIGHT
+        }
+    }
+
+    interface SquareBoard {
+        val width: Int
+
+        fun getCellOrNull(i: Int, j: Int): Cell?
+        fun getCell(i: Int, j: Int): Cell
+
+        fun getAllCells(): Collection<Cell>
+
+        fun getRow(i: Int, jRange: IntProgression): List<Cell>
+        fun getColumn(iRange: IntProgression, j: Int): List<Cell>
+
+        fun Cell.getNeighbour(direction: Direction): Cell?
+    }
+
+    interface GameBoard<T> : SquareBoard {
+
+        operator fun get(cell: Cell): T?
+        operator fun set(cell: Cell, value: T?)
+
+        fun filter(predicate: (T?) -> Boolean): Collection<Cell>
+        fun find(predicate: (T?) -> Boolean): Cell?
+        fun any(predicate: (T?) -> Boolean): Boolean
+        fun all(predicate: (T?) -> Boolean): Boolean
+    }
+  learner_created: false
+- name: src/board/BoardImpl.kt
+  visible: true
+  placeholders:
+  - offset: 3590
+    length: 25
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 90
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  - offset: 3668
+    length: 26
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 149
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  text: |+
+    package board
+
+    import board.Direction.*
+
+    fun createSquareBoard(width: Int): SquareBoard = TODO()
+    fun <T> createGameBoard(width: Int): GameBoard<T> = TODO()
+
+  learner_created: false
+- name: src/games/game/Game.kt
+  visible: true
+  text: |
+    package games.game
+
+    import board.Direction
+
+    interface Game {
+        fun initialize()
+        fun canMove(): Boolean
+        fun hasWon(): Boolean
+        fun processMove(direction: Direction)
+        operator fun get(i: Int, j: Int): Int?
+    }
+  learner_created: false
+- name: src/games/game2048/Game2048.kt
+  visible: true
+  placeholders:
+  - offset: 1227
+    length: 73
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 1227
+    initialized_from_dependency: false
+    selected: false
+    status: Unchecked
+  - offset: 1772
+    length: 428
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 1705
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  - offset: 2541
+    length: 564
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 2052
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  text: |-
+    package games.game2048
+
+    import board.Cell
+    import board.Direction
+    import board.GameBoard
+    import board.createGameBoard
+    import games.game.Game
+
+    /*
+     * Your task is to implement the game 2048 https://en.wikipedia.org/wiki/2048_(video_game).
+     * Implement the utility methods below.
+     *
+     * After implementing it you can try to play the game running 'PlayGame2048'.
+     */
+    fun newGame2048(initializer: Game2048Initializer<Int> = RandomGame2048Initializer): Game =
+            Game2048(initializer)
+
+    class Game2048(private val initializer: Game2048Initializer<Int>) : Game {
+        private val board = createGameBoard<Int?>(4)
+
+        override fun initialize() {
+            repeat(2) {
+                board.addNewValue(initializer)
+            }
+        }
+
+        override fun canMove() = board.any { it == null }
+
+        override fun hasWon() = board.any { it == 2048 }
+
+        override fun processMove(direction: Direction) {
+            if (board.moveValues(direction)) {
+                board.addNewValue(initializer)
+            }
+        }
+
+        override fun get(i: Int, j: Int): Int? = board.run { get(getCell(i, j)) }
+    }
+
+    /*
+     * Add a new value produced by 'initializer' to a specified cell in a board.
+     */
+    fun GameBoard<Int?>.addNewValue(initializer: Game2048Initializer<Int>) {
+        TODO()
+    }
+
+    /*
+     * Update the values stored in a board,
+     * so that the values were "moved" in a specified rowOrColumn only.
+     * Use the helper function 'moveAndMergeEqual' (in Game2048Helper.kt).
+     * The values should be moved to the beginning of the row (or column),
+     * in the same manner as in the function 'moveAndMergeEqual'.
+     * Return 'true' if the values were moved and 'false' otherwise.
+     */
+    fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
+        TODO()
+    }
+
+    /*
+     * Update the values stored in a board,
+     * so that the values were "moved" to the specified direction
+     * following the rules of the 2048 game .
+     * Use the 'moveValuesInRowOrColumn' function above.
+     * Return 'true' if the values were moved and 'false' otherwise.
+     */
+    fun GameBoard<Int?>.moveValues(direction: Direction): Boolean {
+        TODO()
+    }
+  learner_created: false
+- name: src/games/game2048/Game2048Helper.kt
+  visible: true
+  placeholders:
+  - offset: 730
+    length: 392
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 730
+    initialized_from_dependency: false
+    selected: false
+    status: Unchecked
+  text: |+
+    package games.game2048
+
+    /*
+     * This function moves all the non-null elements to the beginning of the list
+     * (by removing nulls) and merges equal elements.
+     * The parameter 'merge' specifies the way how to merge equal elements:
+     * it returns a new element that should be present in the resulting list
+     * instead of two merged elements.
+     *
+     * If the function 'merge("a")' returns "aa",
+     * then the function 'moveAndMergeEqual' transforms the input in the following way:
+     *   a, a, b -> aa, b
+     *   a, null -> a
+     *   b, null, a, a -> b, aa
+     *   a, a, null, a -> aa, a
+     *   a, null, a, a -> aa, a
+     *
+     * You can find more examples in 'TestGame2048Helper'.
+    */
+    fun <T : Any> List<T?>.moveAndMergeEqual(merge: (T) -> T): List<T> =
+            TODO()
+
+  learner_created: false
+- name: src/games/game2048/Game2048Initializer.kt
+  visible: true
+  placeholders:
+  - offset: 820
+    length: 99
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 820
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  text: |-
+    package games.game2048
+
+    import board.Cell
+    import board.GameBoard
+    import kotlin.random.Random
+
+    interface Game2048Initializer<T> {
+        /*
+         * Specifies the cell and the value that should be added to this cell.
+         */
+        fun nextValue(board: GameBoard<T?>): Pair<Cell, T>?
+    }
+
+    object RandomGame2048Initializer: Game2048Initializer<Int> {
+        private fun generateRandomStartValue(): Int =
+                if (Random.nextInt(10) == 9) 4 else 2
+
+        /*
+         * Generate a random value and a random cell among free cells
+         * that given value should be added to.
+         * The value should be 2 for 90% cases, and 4 for the rest of the cases.
+         * Use the 'generateRandomStartValue' function above.
+         * If the board is full return null.
+         */
+        override fun nextValue(board: GameBoard<Int?>): Pair<Cell, Int>? {
+            TODO()
+        }
+    }
+  learner_created: false
+- name: src/games/gameOfFifteen/GameOfFifteen.kt
+  visible: true
+  placeholders:
+  - offset: 385
+    length: 26
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 385
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  text: |+
+    package games.gameOfFifteen
+
+    import board.Direction
+    import board.GameBoard
+    import board.createGameBoard
+    import games.game.Game
+
+    /*
+     * Implement the Game of Fifteen (https://en.wikipedia.org/wiki/15_puzzle).
+     * When you finish, you can play the game by executing 'PlayGameOfFifteen'.
+     */
+    fun newGameOfFifteen(initializer: GameOfFifteenInitializer = RandomGameInitializer()): Game =
+        TODO()
+
+  learner_created: false
+- name: src/games/gameOfFifteen/GameOfFifteenHelper.kt
+  visible: true
+  placeholders:
+  - offset: 480
+    length: 242
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 480
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  text: |-
+    package games.gameOfFifteen
+
+    /*
+     * This function should return the parity of the permutation.
+     * true - the permutation is even
+     * false - the permutation is odd
+     * https://en.wikipedia.org/wiki/Parity_of_a_permutation
+
+     * If the game of fifteen is started with the wrong parity, you can't get the correct result
+     *   (numbers sorted in the right order, empty cell at last).
+     * Thus the initial permutation should be correct.
+     */
+    fun isEven(permutation: List<Int>): Boolean {
+        TODO()
+    }
+  learner_created: false
+- name: src/games/gameOfFifteen/GameOfFifteenInitializer.kt
+  visible: true
+  placeholders:
+  - offset: 596
+    length: 180
+    placeholder_text: TODO()
+    initial_state:
+      length: 6
+      offset: 576
+    initialized_from_dependency: false
+    selected: true
+    status: Unchecked
+  text: |+
+    package games.gameOfFifteen
+
+    interface GameOfFifteenInitializer {
+        /*
+         * Even permutation of numbers 1..15
+         * used to initialized the first 15 cells on a board.
+         * The last cell is empty.
+         */
+        val initialPermutation: List<Int>
+    }
+
+    class RandomGameInitializer : GameOfFifteenInitializer {
+        /*
+         * Generate a random permutation from 1 to 15.
+         * `shuffled()` function might be helpful.
+         * If the permutation is not even, make it even (for instance,
+         * by swapping two numbers).
+         */
+        override val initialPermutation by lazy {
+            TODO()
+        }
+    }
+
+  learner_created: false
+- name: src/games/ui/PlayGame.kt
+  visible: true
+  text: |-
+    // drawing based on https://github.com/bulenkov/2048
+    package games.ui
+
+    import board.Direction
+    import games.game.Game
+    import java.awt.*
+    import java.awt.event.KeyAdapter
+    import java.awt.event.KeyEvent
+    import javax.swing.JFrame
+    import javax.swing.JPanel
+    import javax.swing.WindowConstants
+
+    class PlayGame(val game: Game, val settings: GameSettings) : JPanel() {
+        init {
+            isFocusable = true
+            addKeyListener(object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                    if (game.hasWon() == false && game.canMove()) {
+                        val direction = when (e.keyCode) {
+                            KeyEvent.VK_LEFT -> Direction.LEFT
+                            KeyEvent.VK_RIGHT -> Direction.RIGHT
+                            KeyEvent.VK_DOWN -> Direction.DOWN
+                            KeyEvent.VK_UP -> Direction.UP
+                            else -> null
+                        }
+                        if (direction != null) {
+                            game.processMove(direction)
+                        }
+                    }
+                    repaint()
+                }
+            })
+            game.initialize()
+        }
+
+        override fun paint(g: Graphics) {
+            super.paint(g)
+            g.color = settings.backgroundColor
+            g.fillRect(0, 0, this.size.width, this.size.height)
+            for (y in 1..4) {
+                for (x in 1..4) {
+                    drawTile(g as Graphics2D, game[y, x] ?: 0, x - 1, y - 1)
+                }
+            }
+        }
+
+        private fun offsetCoors(arg: Int): Int {
+            return arg * (TILES_MARGIN + TILE_SIZE) + TILES_MARGIN
+        }
+
+        private fun drawTile(g: Graphics2D, value: Int, x: Int, y: Int) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE)
+
+            val xOffset = offsetCoors(x)
+            val yOffset = offsetCoors(y)
+            g.color = settings.getBackgroundColor(value)
+            g.fillRoundRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE, 14, 14)
+            g.color = settings.getForegroundColor(value)
+            val size = if (value < 100) 36 else if (value < 1000) 32 else 24
+            val font = Font(FONT_NAME, Font.BOLD, size)
+            g.font = font
+
+            val s = value.toString()
+            val fm = getFontMetrics(font)
+
+            val w = fm.stringWidth(s)
+            val h = -fm.getLineMetrics(s, g).baselineOffsets[2].toInt()
+
+            if (value != 0)
+                g.drawString(s, xOffset + (TILE_SIZE - w) / 2, yOffset + TILE_SIZE - (TILE_SIZE - h) / 2 - 2)
+
+            if (game.hasWon() || game.canMove() == false) {
+                g.color = Color(255, 255, 255, 30)
+                g.fillRect(0, 0, width, height)
+                g.color = Color(78, 139, 202)
+                g.font = Font(FONT_NAME, Font.BOLD, 48)
+                if (game.hasWon()) {
+                    g.drawString("You won!", 68, 150)
+                }
+                if (!game.canMove()) {
+                    g.drawString("Game over!", 45, 160)
+                }
+            }
+            g.font = Font(FONT_NAME, Font.PLAIN, 18)
+        }
+    }
+
+    private val FONT_NAME = "Arial"
+    private val TILE_SIZE = 64
+    private val TILES_MARGIN = 16
+
+    abstract class GameSettings(val name: String, val backgroundColor: Color) {
+        abstract fun getBackgroundColor(value: Int): Color
+        abstract fun getForegroundColor(value: Int): Color
+    }
+
+    fun playGame(game: Game, settings: GameSettings) {
+        with(JFrame()) {
+            title = settings.name
+            defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+            setSize(340, 400)
+            isResizable = false
+
+            add(PlayGame(game, settings))
+
+            setLocationRelativeTo(null)
+            isVisible = true
+        }
+    }
+  learner_created: false
+- name: src/games/ui/PlayGame2048.kt
+  visible: true
+  text: |-
+    package games.ui
+
+    import games.game2048.newGame2048
+    import java.awt.Color
+
+    object Game2048Settings : GameSettings("Game 2048", Color(0xbbada0)) {
+        private val emptyColor = Color(0xcdc1b4)
+        private val colors: Map<Int, Color> = run {
+            val colors = listOf(
+                    0xeee4da, 0xede0c8, 0xf2b179, 0xf59563, 0xf67c5f, 0xf65e3b,
+                    0xedcf72, 0xedcc61, 0xedc850, 0xedc53f, 0xedc22e)
+
+            val values: List<Int> = (1..11).map { Math.pow(2.0, it.toDouble()).toInt() }
+            values.zip(colors.map { Color(it) }).toMap()
+        }
+
+        override fun getBackgroundColor(value: Int) = colors[value] ?: emptyColor
+        override fun getForegroundColor(value: Int) = if (value < 16) Color(0x776e65) else Color(0xf9f6f2)
+    }
+
+
+    fun main() {
+        playGame(newGame2048(), Game2048Settings)
+    }
+  learner_created: false
+- name: src/games/ui/PlayGameOfFifteen.kt
+  visible: true
+  text: |-
+    package games.ui
+
+    import games.gameOfFifteen.newGameOfFifteen
+    import java.awt.Color
+
+    object GameOfFifteenSettings : GameSettings("Game of fifteen", Color(0x909090)) {
+        private val emptyColor = Color(0x787878)
+        private val firstColor = Color(0xC8C8C8)
+        private val secondColor = Color(0xCCCCFF)
+        private val foregroundColor = Color(0x545AA7)
+
+        override fun getBackgroundColor(value: Int) = when {
+            value == 0 -> emptyColor
+            ((value - 1) / 4 + value % 4) % 2 == 0 -> firstColor
+            else -> secondColor
+        }
+
+        override fun getForegroundColor(value: Int) = foregroundColor
+    }
+
+    fun main() {
+        playGame(newGameOfFifteen(), GameOfFifteenSettings)
+    }
+  learner_created: false
+- name: test/games/game2048/AbstractTestGameWithSmallNumbers.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import board.GameBoard
+    import board.createGameBoard
+
+    abstract class AbstractTestGameWithSmallNumbers {
+        private val width = 4
+
+        fun createBoard(input: String): GameBoard<Int?> {
+            return createBoard(TestBoard(input))
+        }
+
+        fun createBoard(input: TestBoard): GameBoard<Int?> {
+            val board = createGameBoard<Int?>(width)
+            for (cell in board.getAllCells()) {
+                val ch = input.values[cell.i - 1][cell.j - 1]
+                if (ch != 0) {
+                    board[cell] = ch
+                }
+            }
+            return board
+        }
+
+        fun GameBoard<Int?>.toTestBoard() = TestBoard(valuesToString { i, j ->
+            this[getCell(i + 1, j + 1)]
+        })
+    }
+
+    private fun valuesToString(getElement: (Int, Int) -> Int?) = buildString {
+        for (i in 0..3) {
+            for (j in 0..3) {
+                append(getElement(i, j) ?: '-')
+            }
+            append(' ')
+        }
+    }.trim()
+
+    data class TestBoard(val board: String) {
+        val values: List<List<Int?>> by lazy {
+            board.trim()
+                    .split(' ')
+                    .map { row -> row.map { ch -> if (ch == '-') null else ch - '0' } }
+        }
+
+        fun reversed(): TestBoard = TestBoard(board.reversed())
+
+        fun mirror(): TestBoard {
+            return TestBoard(valuesToString { i, j -> values[j][i] })
+        }
+
+        override fun toString() =
+                board.split(' ')
+                        .joinToString("\n") { it.toList().joinToString(" ") }
+    }
+  learner_created: false
+- name: test/games/game2048/TestAddingValue.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestAddingValue : AbstractTestGameWithSmallNumbers() {
+        @Test
+        fun test1() = testAddingOneNumber("---- ---- -2-- ----")
+
+        @Test
+        fun test2() = testAddingOneNumber("2222 ---- ---- ----")
+
+        @Test
+        fun test3() = testAddingOneNumber("2--- 4--- -2-- ---8")
+
+        @Test
+        fun test4() = testAddingOneNumber("-248 2-2- -2-8 4442")
+
+        private fun testAddingOneNumber(input: String) {
+            val inputBoard = TestBoard(input)
+            val board = createBoard(inputBoard)
+            board.addNewValue(RandomGame2048Initializer)
+            val result = board.toTestBoard()
+            Assert.assertEquals(
+                    buildString {
+                        appendln("Only one element should be different after adding a new element.")
+                        appendln("Input:")
+                        appendln("$inputBoard")
+                        appendln("Result:")
+                        appendln("$result")
+                    },
+                    1, inputBoard.board.indices.count { input[it] != result.board[it] })
+        }
+    }
+  learner_created: false
+- name: test/games/game2048/TestGame2048.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import board.Cell
+    import board.Direction
+    import board.Direction.*
+    import board.GameBoard
+    import games.game.Game
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestGame2048 {
+        private fun Game.asString() =
+                (1..4).joinToString("\n") { i ->
+                    (1..4).joinToString(" ") { j ->
+                        "${get(i, j) ?: "-"}"
+                    }
+                }
+
+        class TestGame2048Initializer(moves: List<Move>) : Game2048Initializer<Int> {
+            val iterator = moves.iterator()
+            override fun nextValue(board: GameBoard<Int?>): Pair<Cell, Int> {
+                val move = iterator.next()
+                return board.getCell(move.position.first, move.position.second) to move.value
+            }
+        }
+
+        private fun testGame(moves: List<Move>) {
+            val game = newGame2048(TestGame2048Initializer(moves))
+            game.initialize()
+            run {
+                // checking the state after initialization
+                val first = moves[0]
+                val second = moves[1]
+                Assert.assertEquals("Wrong result after board initialization " +
+                        "by '${first.value}' at ${first.cell} and " +
+                        "'${second.value}' at ${second.cell}",
+                        second.board, game.asString())
+            }
+
+            for ((index, move) in moves.withIndex()) {
+                if (move.direction == null) continue
+                // checking the state after each move
+                game.processMove(move.direction)
+                val prev = moves[index - 1].board
+                Assert.assertEquals("Wrong result after moving ${move.direction} " +
+                        "and then adding '${move.value}' to ${move.cell} " +
+                        "for\n$prev\n",
+                        move.board, game.asString())
+            }
+        }
+
+        data class Move(
+                val position: Pair<Int, Int>,
+                val value: Int,
+                val direction: Direction?,
+                val initialBoard: String
+        ) {
+            val cell: String
+                get() = "Cell(${position.first}, ${position.second})"
+
+            val board: String = initialBoard.trimMargin()
+        }
+
+        @Test
+        fun testMoves() {
+            testGame(listOf(
+                    Move(Pair(1, 1), 2, null, """
+                |2 - - -
+                |- - - -
+                |- - - -
+                |- - - -"""),
+                    Move(Pair(1, 4), 2, null, """
+                |2 - - 2
+                |- - - -
+                |- - - -
+                |- - - -"""),
+                    Move(Pair(3, 2), 4, RIGHT, """
+                |- - - 4
+                |- - - -
+                |- 4 - -
+                |- - - -"""),
+                    Move(Pair(4, 2), 2, UP, """
+                |- 4 - 4
+                |- - - -
+                |- - - -
+                |- 2 - -"""),
+                    Move(Pair(2, 2), 2, LEFT, """
+                |8 - - -
+                |- 2 - -
+                |- - - -
+                |2 - - -"""),
+                    Move(Pair(4, 4), 2, DOWN, """
+                |- - - -
+                |- - - -
+                |8 - - -
+                |2 2 - 2"""),
+                    Move(Pair(3, 3), 2, RIGHT, """
+                |- - - -
+                |- - - -
+                |- - 2 8
+                |- - 2 4"""),
+                    Move(Pair(1, 2), 4, DOWN, """
+                |- 4 - -
+                |- - - -
+                |- - - 8
+                |- - 4 4"""),
+                    Move(Pair(3, 1), 2, RIGHT, """
+                |- - - 4
+                |- - - -
+                |2 - - 8
+                |- - - 8"""),
+                    Move(Pair(3, 3), 2, DOWN, """
+                |- - - -
+                |- - - -
+                |- - 2 4
+                |2 - - 16"""),
+                    Move(Pair(2, 3), 2, DOWN, """
+                |- - - -
+                |- - 2 -
+                |- - - 4
+                |2 - 2 16"""),
+                    Move(Pair(1, 4), 2, RIGHT, """
+                |- - - 2
+                |- - - 2
+                |- - - 4
+                |- - 4 16"""),
+                    Move(Pair(3, 2), 2, LEFT, """
+                |2 - - -
+                |2 - - -
+                |4 2 - -
+                |4 16 - -"""),
+                    Move(Pair(1, 3), 2, DOWN, """
+                |- - 2 -
+                |- - - -
+                |4 2 - -
+                |8 16 - -""")
+            ))
+        }
+    }
+  learner_created: false
+- name: test/games/game2048/TestGame2048Helper.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import org.junit.Assert
+    import org.junit.FixMethodOrder
+    import org.junit.Test
+    import org.junit.runners.MethodSorters
+
+    @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+    class TestGame2048Helper {
+
+        @Test
+        fun test01SimpleMove1() = testMerge(listOf(null, null, null, "a"), listOf("a"))
+
+        @Test
+        fun test02SimpleMove2() = testMerge(listOf("b", null, null, "a"), listOf("b", "a"))
+
+        @Test
+        fun test03SimpleMove3() = testMerge(listOf(null, "b", null, "a"), listOf("b", "a"))
+
+        @Test
+        fun test04SimpleMerge1() = testMerge(listOf("a", "a", null, null), listOf("aa"))
+
+        @Test
+        fun test05SimpleMerge2() = testMerge(listOf(null, "a", "a", null), listOf("aa"))
+
+        @Test
+        fun test06SimpleMerge3() = testMerge(listOf(null, null, "a", "a"), listOf("aa"))
+
+        @Test
+        fun test07SimpleMerge4() = testMerge(listOf("a", null, "a", null), listOf("aa"))
+
+        @Test
+        fun test08SimpleMerge5() = testMerge(listOf("a", null, null, "a"), listOf("aa"))
+
+        @Test
+        fun test09SimpleMerge6() = testMerge(listOf(null, "a", null, "a"), listOf("aa"))
+
+        @Test
+        fun test10MergeWithExtraElement1() = testMerge(listOf("a", null, "a", "a"), listOf("aa", "a"))
+
+        @Test
+        fun test11MergeWithExtraElement2() = testMerge(listOf("a", null, "a", "b"), listOf("aa", "b"))
+
+        @Test
+        fun test12MergeWithExtraElement3() = testMerge(listOf("a", "a", null, "b"), listOf("aa", "b"))
+
+        @Test
+        fun test13NoMerge1() = testMerge(listOf("a", "b", "a", null), listOf("a", "b", "a"))
+
+        @Test
+        fun test14NoMerge2() = testMerge(listOf("a", null, "b", "a"), listOf("a", "b", "a"))
+
+        @Test
+        fun test15MergeInFull1() = testMerge(listOf("a", "a", "b", "a"), listOf("aa", "b", "a"))
+
+        @Test
+        fun test16MergeInFull2() = testMerge(listOf("a", "a", "b", "b"), listOf("aa", "bb"))
+
+        @Test
+        fun test17MergeOfThree1() = testMerge(listOf("a", "a", "a", null), listOf("aa", "a"))
+
+        @Test
+        fun test18MergeOfThree2() = testMerge(listOf("a", null, "a", "a"), listOf("aa", "a"))
+
+        private fun testMerge(input: List<String?>, expected: List<String?>) {
+            val result = input.moveAndMergeEqual { it.repeat(2) }
+            Assert.assertEquals("Wrong result for $input.moveAndMergeEqual()",
+                    expected, result)
+        }
+    }
+  learner_created: false
+- name: test/games/game2048/TestGame2048Initializer.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestGame2048Initializer : AbstractTestGameWithSmallNumbers() {
+        private val prefix = "Testing RandomGame2048Initializer.nextValue():"
+
+        @Test
+        fun test0() {
+            val board = createBoard("4248 2824 8248 2482")
+            val nextValue = RandomGame2048Initializer.nextValue(board)
+            Assert.assertNull("$prefix new elements can't be added to a full board", nextValue)
+        }
+
+        @Test
+        fun test1() = testNextValue("0000 0000 0200 0000")
+
+        @Test
+        fun test2() = testNextValue("2222 0000 0000 0000")
+
+        @Test
+        fun test3() = testNextValue("2000 4000 0200 0008")
+
+        @Test
+        fun test4() = testNextValue("0248 2020 0208 4442")
+
+        private fun testNextValue(input: String) {
+            val board = createBoard(input)
+            val (cell, value) = RandomGame2048Initializer.nextValue(board)
+                    ?: throw AssertionError("$prefix Next value should be non-null for $board")
+            val empty = board.filter { it == null }
+            Assert.assertTrue("$prefix a value might be added only to one of the empty cells", cell in empty)
+            Assert.assertTrue("$prefix new element can only be 2 or 4", value in setOf(2, 4))
+        }
+    }
+  learner_created: false
+- name: test/games/board/TestGameBoard.kt
+  visible: true
+  text: |-
+    package games.board
+
+    import board.GameBoard
+    import board.createGameBoard
+    import org.junit.Assert
+    import org.junit.FixMethodOrder
+    import org.junit.Test
+    import org.junit.runners.MethodSorters
+
+    @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+    class TestGameBoard {
+        operator fun <T> GameBoard<T>.get(i: Int, j: Int) = get(getCell(i, j))
+        operator fun <T> GameBoard<T>.set(i: Int, j: Int, value: T) = set(getCell(i, j), value)
+
+        @Test
+        fun test01GetAndSetElement() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            Assert.assertEquals('a', gameBoard[1, 1])
+        }
+
+        @Test
+        fun test02Filter() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            gameBoard[1, 2] = 'b'
+            val cells = gameBoard.filter { it == 'a' }
+            Assert.assertEquals(1, cells.size)
+            val cell = cells.first()
+            Assert.assertEquals(1, cell.i)
+            Assert.assertEquals(1, cell.j)
+        }
+
+        @Test
+        fun test03All() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            gameBoard[1, 2] = 'a'
+            Assert.assertFalse(gameBoard.all { it == 'a' })
+            gameBoard[2, 1] = 'a'
+            gameBoard[2, 2] = 'a'
+            Assert.assertTrue(gameBoard.all { it == 'a' })
+        }
+
+        @Test
+        fun test04Any() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            gameBoard[1, 2] = 'b'
+            Assert.assertTrue(gameBoard.any { it in 'a'..'b' })
+            Assert.assertTrue(gameBoard.any { it == null })
+        }
+
+        @Test
+        fun test05TheSameCell() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            val cell1 = gameBoard.find { it == 'a' }
+            gameBoard[1, 1] = 'b'
+            val cell2 = gameBoard.find { it == 'b' }
+            Assert.assertEquals(cell1, cell2)
+        }
+
+        @Test
+        fun test06FindReturnsTheSameCell() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            val first = gameBoard.find { it == 'a' }
+            val second = gameBoard.getCell(1, 1)
+            Assert.assertTrue("'find' shouldn't recreate the 'Cell' instances.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells\n" +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+
+        @Test
+        fun test07FilterTheSameCell() {
+            val gameBoard = createGameBoard<Char>(2)
+            gameBoard[1, 1] = 'a'
+            val cells = gameBoard.filter { it == 'a' }
+            val first = cells.first()
+            val second = gameBoard.getCell(1, 1)
+            Assert.assertTrue("'filter' shouldn't recreate the 'Cell' instances.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells\n" +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+
+        @Test
+        fun test08AllAny() {
+            val gameBoard = createGameBoard<Int>(2)
+            gameBoard[1, 1] = 1
+            gameBoard[1, 2] = 0
+            gameBoard[2, 1] = 2
+            gameBoard[2, 2] = 3
+            testAllAny(gameBoard)
+        }
+
+        @Test
+        fun test09AllAny() {
+            val gameBoard = createGameBoard<Int>(2)
+            gameBoard[1, 1] = 0
+            gameBoard[1, 2] = 0
+            gameBoard[2, 1] = 0
+            gameBoard[2, 2] = 0
+            testAllAny(gameBoard)
+        }
+
+        @Test
+        fun test10AllAny() {
+            val gameBoard = createGameBoard<Int>(2)
+            gameBoard[1, 1] = 1
+            gameBoard[1, 2] = 2
+            gameBoard[2, 1] = 3
+            gameBoard[2, 2] = 4
+            testAllAny(gameBoard)
+        }
+
+        @Test
+        fun test11AllAny() {
+            val gameBoard = createGameBoard<Int>(2)
+            gameBoard[1, 1] = 0
+            gameBoard[1, 2] = 1
+            gameBoard[2, 2] = 1
+            testAllAny(gameBoard)
+        }
+
+        private fun <T> GameBoard<T>.asString() =
+                (1..width).joinToString("\n") { i ->
+                    (1..width).joinToString(" ") { j ->
+                        "${get(i, j) ?: "-"}"
+                    }
+                }
+
+        private fun testAllAny(gameBoard: GameBoard<Int>) {
+            val allNonZero = gameBoard.all { it != 0 }
+            val anyZero = gameBoard.any { it == 0 }
+            Assert.assertTrue(buildString {
+                appendln("'board.all { it != 0 }' should give the same result as '!board.any { it == 0 }' for the board")
+                appendln(gameBoard.asString())
+            }, allNonZero == !anyZero)
+        }
+    }
+  learner_created: false
+- name: test/games/gameOfFifteen/TestGameOfFifteen.kt
+  visible: true
+  text: |-
+    package games.gameOfFifteen
+
+    import board.Direction
+    import board.Direction.*
+    import games.game.Game
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestGameOfFifteen {
+        private fun Game.asString() =
+                (1..4).joinToString("\n") { i ->
+                    (1..4).joinToString(" ") { j ->
+                        get(i, j)?.let { "%2d".format(it) } ?: " -"
+                    }
+                }
+
+        class TestGameInitializer(
+                override val initialPermutation: List<Int>
+        ) : GameOfFifteenInitializer
+
+        private fun testGame(initialPermutation: List<Int>, moves: List<Move>) {
+            val game = newGameOfFifteen(TestGameInitializer(initialPermutation))
+            game.initialize()
+
+            for ((index, move) in moves.withIndex()) {
+                if (move.direction == null) continue
+                // checking the state after each move
+                Assert.assertTrue("The move for game of fifteen should be always possible", game.canMove())
+                game.processMove(move.direction)
+                val prev = moves[index - 1].board
+                Assert.assertEquals("Wrong result after pressing ${move.direction} " +
+                        "for\n$prev\n",
+                        move.board, game.asString())
+            }
+        }
+
+        data class Move(
+                val direction: Direction?,
+                val initialBoard: String
+        ) {
+            val board: String = initialBoard.trimMargin()
+        }
+
+        @Test
+        fun testMoves() {
+            testGame(listOf(3, 6, 13, 15, 7, 5, 8, 4, 14, 11, 12, 1, 10, 9, 2),
+                    listOf(
+                            Move(null, """
+                | 3  6 13 15
+                | 7  5  8  4
+                |14 11 12  1
+                |10  9  2  -"""),
+                            Move(RIGHT, """
+                | 3  6 13 15
+                | 7  5  8  4
+                |14 11 12  1
+                |10  9  -  2"""),
+                            Move(DOWN, """
+                | 3  6 13 15
+                | 7  5  8  4
+                |14 11  -  1
+                |10  9 12  2"""),
+                            Move(LEFT, """
+                | 3  6 13 15
+                | 7  5  8  4
+                |14 11  1  -
+                |10  9 12  2"""),
+                            Move(UP, """
+                | 3  6 13 15
+                | 7  5  8  4
+                |14 11  1  2
+                |10  9 12  -"""),
+                            Move(RIGHT, """
+                | 3  6 13 15
+                | 7  5  8  4
+                |14 11  1  2
+                |10  9  - 12""")
+                    ))
+        }
+
+        @Test
+        fun testWinning() {
+            val game = newGameOfFifteen(TestGameInitializer(
+                    (1..15).toList()))
+            game.initialize()
+            Assert.assertTrue("The player should win when the numbers are in order",
+                    game.hasWon())
+        }
+    }
+  learner_created: false
+- name: test/games/gameOfFifteen/TestGameOfFifteenHelper.kt
+  visible: true
+  text: |-
+    package games.gameOfFifteen
+
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestGameOfFifteenHelper {
+        private fun testPermutation(permutation: List<Int>, expected: Boolean) {
+            Assert.assertEquals("The following permutation should be ${if (expected) "even" else "odd"}: $permutation", expected,
+                isEven(permutation))
+        }
+
+        private fun testPermutation(permutation: String, parity: Boolean) {
+            testPermutation(permutation.map { "$it".toInt() }, parity)
+        }
+
+        private fun testEven(shortPermutation: String) = testPermutation(shortPermutation, true)
+        private fun testOdd(shortPermutation: String) = testPermutation(shortPermutation, false)
+
+        private fun testEven(shortPermutation: Int) = testEven(shortPermutation.toString())
+        private fun testOdd(shortPermutation: Int) = testOdd(shortPermutation.toString())
+
+        @Test
+        fun testEven0() = testEven(123)
+
+        @Test
+        fun testEven1() = testEven(1234)
+
+        @Test
+        fun testEven2() = testEven(3124)
+
+        @Test
+        fun testEven3() = testEven(2314)
+
+        @Test
+        fun testEven4() = testEven(2143)
+
+        @Test
+        fun testEven5() = testEven(1423)
+
+        @Test
+        fun testEven6() = testEven(4213)
+
+        @Test
+        fun testEven7() = testEven(1342)
+
+        @Test
+        fun testEven8() = testEven(4132)
+
+        @Test
+        fun testEven9() = testEven(3412)
+
+        @Test
+        fun testEven10() = testEven(3241)
+
+        @Test
+        fun testEven11() = testEven(2431)
+
+        @Test
+        fun testEven12() = testEven(4321)
+
+        @Test
+        fun testEven13() = testEven("0123456789")
+
+        @Test
+        fun testEven14() = testEven("4301865279")
+
+        @Test
+        fun testEven15() = testEven("9604572831")
+
+        @Test
+        fun testEven16() = testEven("1320485769")
+
+        @Test
+        fun testOdd0() = testOdd(132)
+
+        @Test
+        fun testOdd1() = testOdd(2134)
+
+        @Test
+        fun testOdd2() = testOdd(1324)
+
+        @Test
+        fun testOdd3() = testOdd(3214)
+
+        @Test
+        fun testOdd4() = testOdd(1243)
+
+        @Test
+        fun testOdd5() = testOdd(4123)
+
+        @Test
+        fun testOdd6() = testOdd(2413)
+
+        @Test
+        fun testOdd7() = testOdd(3142)
+
+        @Test
+        fun testOdd8() = testOdd(1432)
+
+        @Test
+        fun testOdd9() = testOdd(4312)
+
+        @Test
+        fun testOdd10() = testOdd(2341)
+
+        @Test
+        fun testOdd11() = testOdd(4231)
+
+        @Test
+        fun testOdd12() = testOdd(3421)
+
+        @Test
+        fun testOdd13() = testOdd("1234567890")
+
+        @Test
+        fun testOdd14() = testOdd("5782401963")
+
+        @Test
+        fun testOdd15() = testOdd("3592871064")
+
+        @Test
+        fun testOdd16() = testOdd("2045831967")
+
+        @Test
+        fun testStart() = testPermutation((1..15).toList(), true)
+    }
+  learner_created: false
+- name: test/games/gameOfFifteen/TestGameOfFifteenInitializer.kt
+  visible: true
+  text: |-
+    package games.gameOfFifteen
+
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestGameOfFifteenInitializer {
+        @Test
+        fun testInitialPermutationIsNotTrivial() {
+            val initializer = RandomGameInitializer()
+            Assert.assertNotEquals("The initial permutation must not be trivial",
+                (1..15).toList(), initializer.initialPermutation)
+        }
+
+        @Test
+        fun testInitialPermutationIsEven() {
+            val initializer = RandomGameInitializer()
+            Assert.assertNotEquals("The initial permutation must be even",
+                isEven(initializer.initialPermutation))
+        }
+    }
+  learner_created: false
+- name: test/games/game2048/TestMoveValues.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import board.Direction
+    import board.Direction.DOWN
+    import board.Direction.RIGHT
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestMoveValues : AbstractTestGameWithSmallNumbers() {
+        @Test
+        fun testSimpleMove() = testAllDirections("---- ---- -2-- ----", "---- ---- ---2 ----")
+
+        @Test
+        fun testNoMove() = testAllDirections("---- ---- ---- 2424", "---- ---- ---- 2424", move = false)
+
+        @Test
+        fun testSeveralMoves() = testAllDirections("2--- -2-- --2- ---2", "---2 ---2 ---2 ---2")
+
+        @Test
+        fun testMovesInSomeRows() = testAllDirections("2--- ---- --2- 2424", "---2 ---- ---2 2424")
+
+        @Test
+        fun testMoveAndMerge() = testAllDirections("2-2- -2-2 --2- ---2", "---4 ---4 ---2 ---2")
+
+        @Test
+        fun testMerge() = testAllDirections("2-22 2-42 22-2 ----", "--24 -242 --24 ----")
+
+        private fun testAllDirections(inputString: String, expectedString: String, move: Boolean = true) {
+            val input = TestBoard(inputString)
+            val expected = TestBoard(expectedString)
+            testRegularAndReversedDirections(RIGHT, input, expected, move)
+            testRegularAndReversedDirections(DOWN, input.mirror(), expected.mirror(), move)
+        }
+
+        private fun testRegularAndReversedDirections(direction: Direction, input: TestBoard, expected: TestBoard, move: Boolean) {
+            testMove(direction, input, expected, move)
+            testMove(direction.reversed(), input.reversed(), expected.reversed(), move)
+        }
+
+        private fun testMove(direction: Direction, input: TestBoard, expected: TestBoard, expectedMove: Boolean) {
+            val board = createBoard(input)
+            val actualMove = board.moveValues(direction)
+            val result = board.toTestBoard()
+            Assert.assertEquals("Incorrect move to $direction.\n" +
+                    "Input:\n$input\n", expected, result)
+            Assert.assertEquals("The 'moveValues' method returns incorrect result. Direction: $direction.\n" +
+                    "Input:\n$input\n", expectedMove, actualMove)
+        }
+    }
+  learner_created: false
+- name: test/games/game2048/TestMoveValuesInRowOrColumn.kt
+  visible: true
+  text: |-
+    package games.game2048
+
+    import board.Cell
+    import board.SquareBoard
+    import org.junit.Assert
+    import org.junit.Test
+
+    class TestMoveValuesInRowOrColumn : AbstractTestGameWithSmallNumbers() {
+        private val defaultInput = """-2-4 2--- ---- 4---"""
+
+        @Test
+        fun testRow() = testMoveInRowOrColumn({ it.getRow(1, 1..4) }, "Row(1, 1..4)",
+                "24-- 2--- ---- 4---")
+
+        @Test
+        fun testRowReversed() = testMoveInRowOrColumn({ it.getRow(1, 4 downTo 1) }, "Row(1, 4 downTo 1)",
+                "--24 2--- ---- 4---")
+
+
+        @Test
+        fun testColumn() = testMoveInRowOrColumn({ it.getColumn(1..4, 1) }, "Column(1..4, 1)",
+                "22-4 4--- ---- ----")
+
+        @Test
+        fun testColumnReversed() = testMoveInRowOrColumn({ it.getColumn(4 downTo 1, 1) }, "Column(4 downTo 1, 1)",
+                "-2-4 ---- 2--- 4---")
+
+        @Test
+        fun testNoMove() = testMoveInRowOrColumn({ it.getRow(1, 1..4) }, "Row(1, 1..4)",
+                "2424 ---- ---- ----", "2424 ---- ---- ----", expectedMove = false)
+
+        private fun testMoveInRowOrColumn(
+                getRowOrColumn: (SquareBoard) -> List<Cell>,
+                rowOrColumnName: String,
+                expected: String,
+                input: String = defaultInput,
+                expectedMove: Boolean = true
+        ) {
+            val inputBoard = TestBoard(input)
+            val board = createBoard(inputBoard)
+            val rowOrColumn = getRowOrColumn(board)
+            val actualMove = board.moveValuesInRowOrColumn(rowOrColumn)
+
+            Assert.assertEquals("Incorrect move in $rowOrColumnName.\nInput:\n$inputBoard\n",
+                    TestBoard(expected), board.toTestBoard())
+
+            Assert.assertEquals("The 'moveValuesInRowOrColumn' method returns incorrect result for input:\n$inputBoard",
+                    expectedMove, actualMove)
+        }
+    }
+  learner_created: false
+- name: test/games/board/TestSquareBoard.kt
+  visible: true
+  text: |
+    package games.board
+
+    import board.Cell
+    import board.Direction
+    import board.Direction.*
+    import board.createSquareBoard
+    import org.junit.Assert
+    import org.junit.FixMethodOrder
+    import org.junit.Test
+    import org.junit.runners.MethodSorters
+
+    @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+    class TestSquareBoard {
+        @Test
+        fun test00AllCells() {
+            val board = createSquareBoard(2)
+            val cells = board.getAllCells().sortedWith(compareBy<Cell> { it.i }.thenBy { it.j })
+            Assert.assertEquals("[(1, 1), (1, 2), (2, 1), (2, 2)]", cells.toString())
+        }
+
+        @Test
+        fun test01Cell() {
+            val board = createSquareBoard(2)
+            val cell = board.getCellOrNull(1, 2)
+            Assert.assertEquals(1, cell?.i)
+            Assert.assertEquals(2, cell?.j)
+        }
+
+        @Test
+        fun test02NoCell() {
+            val board = createSquareBoard(2)
+            val cell = board.getCellOrNull(3, 3)
+            Assert.assertEquals(null, cell)
+        }
+
+        @Test
+        fun test03Row() {
+            val board = createSquareBoard(2)
+            val row = board.getRow(1, 1..2)
+            Assert.assertEquals("[(1, 1), (1, 2)]", row.toString())
+        }
+
+        @Test
+        fun test04RowReversed() {
+            val board = createSquareBoard(2)
+            val row = board.getRow(1, 2 downTo 1)
+            Assert.assertEquals("[(1, 2), (1, 1)]", row.toString())
+        }
+
+        @Test
+        fun test05RowWrongRange() {
+            val board = createSquareBoard(2)
+            val row = board.getRow(1, 1..10)
+            Assert.assertEquals("[(1, 1), (1, 2)]", row.toString())
+        }
+
+        @Test
+        fun test06Neighbour() {
+            val board = createSquareBoard(2)
+            with(board) {
+                val cell = getCellOrNull(1, 1)
+                Assert.assertNotNull(cell)
+                Assert.assertEquals(null, cell!!.getNeighbour(Direction.UP))
+                Assert.assertEquals(null, cell.getNeighbour(Direction.LEFT))
+                Assert.assertEquals("(2, 1)", cell.getNeighbour(Direction.DOWN).toString())
+                Assert.assertEquals("(1, 2)", cell.getNeighbour(Direction.RIGHT).toString())
+            }
+        }
+
+        @Test
+        fun test07AllCells() {
+            val board = createSquareBoard(3)
+            val cells = board.getAllCells().sortedWith(compareBy<Cell> { it.i }.thenBy { it.j })
+            Assert.assertEquals("Wrong result for 'getAllCells()' for the board of width 3.",
+                    "[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3)]",
+                    cells.toString())
+        }
+
+        @Test
+        fun test08Cell() {
+            val board = createSquareBoard(4)
+            val cell = board.getCellOrNull(2, 3)
+            Assert.assertEquals("The board of width 4 should contain the cell (2, 3).",
+                    "(2, 3)", cell.toString())
+        }
+
+        @Test
+        fun test09NoCell() {
+            val board = createSquareBoard(4)
+            val cell = board.getCellOrNull(10, 10)
+            Assert.assertEquals("The board of width 4 should contain the cell (10, 10).", null, cell)
+        }
+
+        @Test
+        fun test10Row() {
+            val row = createSquareBoard(4).getRow(1, 1..2)
+            Assert.assertEquals("Wrong row for 'createSquareBoard(4).getRow(1, 1..2)'.",
+                    "[(1, 1), (1, 2)]", row.toString())
+        }
+
+        @Test
+        fun test11Column() {
+            val row = createSquareBoard(4).getColumn(1..2, 3)
+            Assert.assertEquals("Wrong column for 'createSquareBoard(4).getColumn(1..2, 3)'.",
+                    "[(1, 3), (2, 3)]", row.toString())
+        }
+
+        @Test
+        fun test12RowReversedRange() {
+            val row = createSquareBoard(4).getRow(1, 4 downTo 1)
+            Assert.assertEquals("Wrong column for 'createSquareBoard(4).getRow(1, 4 downTo 1)'.",
+                    "[(1, 4), (1, 3), (1, 2), (1, 1)]", row.toString())
+        }
+
+        @Test
+        fun test13ColumnReversedRange() {
+            val row = createSquareBoard(4).getColumn(2 downTo 1, 3)
+            Assert.assertEquals("Wrong column for 'createSquareBoard(4).getColumn(2 downTo 1, 3)'.",
+                    "[(2, 3), (1, 3)]", row.toString())
+        }
+
+        @Test
+        fun test14ColumnWrongRange() {
+            val row = createSquareBoard(4).getColumn(3..6, 2)
+            Assert.assertEquals("Wrong column for 'createSquareBoard(4).getColumn(3..6, 2)'.",
+                    "[(3, 2), (4, 2)]", row.toString())
+        }
+
+        private fun neighbourMessage(cell: Cell, direction: Direction) =
+                "Wrong neighbour for the cell $cell in a direction $direction."
+
+        @Test
+        fun test15Neighbour() {
+            with(createSquareBoard(4)) {
+                val cell = getCellOrNull(2, 3)
+                Assert.assertNotNull("The board of width 4 should contain the cell (2, 3).", cell)
+                Assert.assertEquals(neighbourMessage(cell!!, UP), "(1, 3)", cell.getNeighbour(UP).toString())
+                Assert.assertEquals(neighbourMessage(cell, DOWN), "(3, 3)", cell.getNeighbour(DOWN).toString())
+                Assert.assertEquals(neighbourMessage(cell, LEFT), "(2, 2)", cell.getNeighbour(LEFT).toString())
+                Assert.assertEquals(neighbourMessage(cell, RIGHT), "(2, 4)", cell.getNeighbour(RIGHT).toString())
+            }
+        }
+
+        @Test
+        fun test16NullableNeighbour() {
+            with(createSquareBoard(4)) {
+                val cell = getCellOrNull(4, 4)
+                Assert.assertNotNull("The board of width 4 should contain the cell (4, 4).", cell)
+                Assert.assertEquals(neighbourMessage(cell!!, UP), "(3, 4)", cell.getNeighbour(UP).toString())
+                Assert.assertEquals(neighbourMessage(cell, LEFT), "(4, 3)", cell.getNeighbour(LEFT).toString())
+                Assert.assertEquals(neighbourMessage(cell, DOWN), null, cell.getNeighbour(DOWN))
+                Assert.assertEquals(neighbourMessage(cell, RIGHT), null, cell.getNeighbour(RIGHT))
+            }
+        }
+
+        @Test
+        fun test17TheSameCell() {
+            val board = createSquareBoard(4)
+            val first = board.getCell(1, 2)
+            val second = board.getCellOrNull(1, 2)
+            Assert.assertTrue("'getCell' and 'getCellOrNull' should return the same 'Cell' instances.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells " +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+
+        @Test
+        fun test18TheSameCell() {
+            val board = createSquareBoard(1)
+            val first = board.getAllCells().first()
+            val second = board.getCell(1, 1)
+            Assert.assertTrue("'getAllCells' and 'getCell' should return the same 'Cell' instances.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells " +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+
+        @Test
+        fun test19TheSameCell() {
+            val board = createSquareBoard(4)
+            val cell = board.getCell(1, 1)
+            val first = board.run { cell.getNeighbour(RIGHT) }
+            val second = board.getCell(1, 2)
+            Assert.assertTrue("'getNeighbour' shouldn't recreate the 'Cell' instance.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells " +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+
+        @Test
+        fun test20TheSameCell() {
+            val board = createSquareBoard(2)
+            val row = board.getRow(1, 1..1)
+            val first = row[0]
+            val second = board.getCell(1, 1)
+            Assert.assertTrue("'getRow' shouldn't recreate the 'Cell' instances.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells " +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+
+        @Test
+        fun test21TheSameCell() {
+            val board = createSquareBoard(2)
+            val column = board.getColumn(1..1, 2)
+            val first = column[0]
+            val second = board.getCell(1, 2)
+            Assert.assertTrue("'getColumn' shouldn't recreate the 'Cell' instances.\n" +
+                    "Create only 'width * width' cells; all the functions working with cells " +
+                    "should return existing cells instead of creating new ones.",
+                    first === second)
+        }
+    }
+  learner_created: false
+- name: partId
+  visible: false
+  learner_created: false
+- name: assignmentKey
+  visible: false
+  learner_created: false
+feedback_link: https://www.coursera.org/learn/kotlin-for-java-developers/programming/NSid0/game-2048-game-of-fifteen/discussions
+status: Unchecked
+record: -1
